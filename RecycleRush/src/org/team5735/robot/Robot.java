@@ -9,6 +9,7 @@ public class Robot extends IterativeRobot {
 	RobotDrive driveTrain;
 	Joystick driveStick;
 	VictorSP liftMotor;
+	CameraServer server;
 	
 	int driveTrainLeftMotorPort = 0;
 	int driveTrainRightMotorPort = 1;
@@ -35,6 +36,10 @@ public class Robot extends IterativeRobot {
     	driveTrain = new RobotDrive(driveTrainLeftMotorPort,driveTrainRightMotorPort);
     	driveStick = new Joystick(driveStickPort);
     	liftMotor = new VictorSP(liftMotorPort);
+    	
+        server = CameraServer.getInstance();
+        server.setQuality(50);
+        server.startAutomaticCapture("cam0");
     }
 
     public void autonomousPeriodic() {
