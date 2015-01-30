@@ -33,13 +33,16 @@ public class Robot extends IterativeRobot {
     }
 	
     public void robotInit() {
+    	
+    	server = CameraServer.getInstance();
+        server.setQuality(50);
+        //the camera name (ex "cam0") can be found through the roborio web interface
+        server.startAutomaticCapture("cam0");
+    	
     	driveTrain = new RobotDrive(driveTrainLeftMotorPort,driveTrainRightMotorPort);
     	driveStick = new Joystick(driveStickPort);
     	liftMotor = new VictorSP(liftMotorPort);
-    	
-        server = CameraServer.getInstance();
-        server.setQuality(50);
-        server.startAutomaticCapture("cam0");
+
     }
 
     public void autonomousPeriodic() {
