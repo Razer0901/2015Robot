@@ -10,11 +10,14 @@ public class Robot extends IterativeRobot {
 	Joystick driveStick;
 	VictorSP liftMotor;
 	CameraServer server;
+	Encoder driveTrainRightEncoder;
+	Encoder driveTrainLeftEncoder;
 	
 	int driveTrainLeftMotorPort = 0;
 	int driveTrainRightMotorPort = 1;
 	int driveStickPort = 0;
 	int liftMotorPort = 2;
+	
 	int joystickMoveAxis = 5;
 	int joystickRotateAxis = 0;
 	int joystickTurboAxis = 3;
@@ -36,12 +39,16 @@ public class Robot extends IterativeRobot {
     	
     	server = CameraServer.getInstance();
         server.setQuality(50);
-        //the camera name (ex "cam0") can be found through the roborio web interface
         server.startAutomaticCapture("cam0");
     	
     	driveTrain = new RobotDrive(driveTrainLeftMotorPort,driveTrainRightMotorPort);
     	driveStick = new Joystick(driveStickPort);
     	liftMotor = new VictorSP(liftMotorPort);
+    	
+    	driveTrainRightEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
+    	driveTrainRightEncoder.reset();
+    	driveTrainLeftEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
+    	driveTrainLeftEncoder.reset();
 
     }
 
