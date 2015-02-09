@@ -1,6 +1,7 @@
 package org.team5735.robot;
 
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -8,8 +9,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
-import edu.wpi.first.wpilibj.buttons.Button;
-import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
 public class Robot extends IterativeRobot {
 	
@@ -18,16 +17,20 @@ public class Robot extends IterativeRobot {
 	RobotDrive driveTrain;
 	Joystick driveStick;
 	VictorSP liftMotor;
-	CameraServer server;
+	CameraServer camServer;
 	Encoder driveTrainRightEncoder;
 	Encoder driveTrainLeftEncoder;
-	Button testButton;
-	StatusOut statusOut;
+	Encoder liftEncoder;
+	DigitalOutput ledGreen;
+	DigitalOutput ledRed;
 	
+	
+	int driveStickPort = 0;
 	int driveTrainLeftMotorPort = 0;
 	int driveTrainRightMotorPort = 1;
-	int driveStickPort = 0;
 	int liftMotorPort = 2;
+	int ledRedPort = 8;
+	int ledGreenPort = 9;
 	
 	int joystickMoveAxis = 5;
 	int joystickRotateAxis = 0;
@@ -36,9 +39,11 @@ public class Robot extends IterativeRobot {
 	int joystickLiftUp = 5;
 	int joystickLiftDown = 6;
 	int joystickTestButton = 1;
+	int joystickResetButton = 2;
+	int joystickLedButton = 3;
 	
 	double driveTrainMoveScaling = 0.5;
-	double driveTrainRotateScaling = 0.4;
+	double driveTrainRotateScaling = 0.5;
 	
 	
     public void arcadeDrive(GenericHID joystick, final int moveAxis, final double moveScaling, final int rotateAxis, final double rotateScaling, final int turboAxis, boolean squaredInputs){
@@ -49,39 +54,87 @@ public class Robot extends IterativeRobot {
 	
     public void robotInit() {
     	
-//    	server = CameraServer.getInstance();
-//        server.setQuality(50);
-//        server.startAutomaticCapture("cam0");
+    	
+    	camServer = CameraServer.getInstance();
+        camServer.setQuality(50);
+        camServer.startAutomaticCapture("cam0");
     	
     	driveTrain = new RobotDrive(driveTrainLeftMotorPort,driveTrainRightMotorPort);
     	driveStick = new Joystick(driveStickPort);
+    	
+    	ledGreen = new DigitalOutput(ledGreenPort);
+    	ledRed = new DigitalOutput(ledRedPort);
+    	
     	liftMotor = new VictorSP(liftMotorPort);
-    	testButton = new JoystickButton(driveStick,joystickTestButton);
-    	System.out.println("!!!!!!!!!!!!!!!!!!!!!!!");
-    	statusOut = new StatusOut(this);
-    	statusOut.start();
-    	System.out.println("&&&&&&&&&&&&&&&&&&&");
 
     	driveTrainRightEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
     	driveTrainRightEncoder.reset();
     	driveTrainRightEncoder.setMaxPeriod(.1);
     	driveTrainRightEncoder.setMinRate(10);
-    	driveTrainRightEncoder.setDistancePerPulse((6*Math.PI)/2048);
-    	driveTrainRightEncoder.setReverseDirection(true);
-    	driveTrainRightEncoder.setSamplesToAverage(7);
+    	driveTrainRightEncoder.setDistancePerPulse(-1*(6*Math.PI)/2048*125/120);
+    	driveTrainRightEncoder.setSamplesToAverage(10);
     	
     	driveTrainLeftEncoder = new Encoder(2, 3, false, Encoder.EncodingType.k4X);
     	driveTrainLeftEncoder.reset();
     	driveTrainLeftEncoder.setMaxPeriod(.1);
     	driveTrainLeftEncoder.setMinRate(10);
-    	driveTrainLeftEncoder.setDistancePerPulse((6*Math.PI)/2048);
-    	driveTrainLeftEncoder.setReverseDirection(false);
-    	driveTrainLeftEncoder.setSamplesToAverage(7);
+    	driveTrainLeftEncoder.setDistancePerPulse((6*Math.PI)/2048*125/120);
+    	driveTrainLeftEncoder.setSamplesToAverage(10);
 
     }
 
     public void autonomousPeriodic() {
-
+    	while(isAutonomous()&& isEnabled()){
+    		if (loopCount == 100){
+    			
+    			while(driveTrainLeftEncoder.getDistance() <30 && driveTrainRightEncoder.getDistance() <30){
+    				driveTrain.drive(-0.25, 0);
+    				System.out.println("Running While loop");
+    			}
+    			driveTrain.drive(0,0);
+    			driveTrainRightEncoder.reset();
+    			driveTrainLeftEncoder.reset();
+    			Timer.delay(1);
+    			
+    			while(driveTrainLeftEncoder.getDistance() < 1*34*Math.PI*90/360 && driveTrainRightEncoder.getDistance() > -1*34*Math.PI*90/360){
+    				driveTrain.drive(-0.25, 1);
+    				System.out.println("Running While loop");
+    			}
+    			driveTrain.drive(0,0);
+    			driveTrainRightEncoder.reset();
+    			driveTrainLeftEncoder.reset();
+    			Timer.delay(1);
+    			
+    			while(driveTrainLeftEncoder.getDistance() <12 && driveTrainRightEncoder.getDistance() <12){
+    				driveTrain.drive(-0.25, 0);
+    				System.out.println("Running While loop");
+    			}
+    			driveTrain.drive(0,0);
+    			driveTrainRightEncoder.reset();
+    			driveTrainLeftEncoder.reset();
+    			Timer.delay(1);
+    			
+    			while(driveTrainLeftEncoder.getDistance() > -1*34*Math.PI*90/360 && driveTrainRightEncoder.getDistance() < 1*34*Math.PI*90/360){
+    				driveTrain.drive(-0.25, -1);
+    				System.out.println("Running While loop");
+    			}
+    			driveTrain.drive(0,0);
+    			driveTrainRightEncoder.reset();
+    			driveTrainLeftEncoder.reset();
+    			Timer.delay(1);
+    			
+    			while(driveTrainLeftEncoder.getDistance() <12 && driveTrainRightEncoder.getDistance() <12){
+    				driveTrain.drive(-0.25, 0);
+    				System.out.println("Running While loop");
+    			}
+    			driveTrain.drive(0,0);
+    			driveTrainRightEncoder.reset();
+    			driveTrainLeftEncoder.reset();
+    			Timer.delay(1);
+    		}
+    		loopCount++;
+    		Timer.delay(0.01);
+    	}
     }
 
     public void teleopPeriodic() {
@@ -94,15 +147,27 @@ public class Robot extends IterativeRobot {
 //        	}
         	
 
+        	if(driveStick.getRawButton(joystickLedButton)){
+            	ledGreen.set(true);
+            	ledRed.set(false);
+        	}else if(!driveStick.getRawButton(joystickLedButton)){
+        		ledGreen.set(false);
+        		ledRed.set(true);
+        	}
+        	
         	if(driveStick.getRawButton(joystickTestButton)){
             	System.out.print("Left: ");
-           		System.out.println(driveTrainLeftEncoder.get());
            		System.out.println(driveTrainLeftEncoder.getDistance());
            		System.out.println();
            		System.out.print("Right: ");
-            	System.out.println(driveTrainRightEncoder.get());
             	System.out.println(driveTrainRightEncoder.getDistance());
             	System.out.println();
+        	}
+        	
+        	if(driveStick.getRawButton(joystickResetButton)){
+        		driveTrainLeftEncoder.reset();
+        		driveTrainRightEncoder.reset();
+        		loopCount = 0;
         	}
         	
         	if(driveStick.getRawButton(joystickLiftUp)){
